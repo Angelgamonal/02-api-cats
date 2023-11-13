@@ -1,42 +1,15 @@
 import { useEffect, useState } from 'react';
-
-const API_GET_WORD = 'https://catfact.ninja/fact';
-
-const API_GET_IMAGE = 'https://cataas.com';
+import { useGetRandomFact } from './hooks/useGetRandomFact';
+import { useGetCatImage } from './hooks/useGetCatImage';
 
 export const App = () => {
-	const [firstWord, setFirstWord] = useState();
+	const { fact, randomFact } = useGetRandomFact();
 
-	const [urlImage, setUrlImage] = useState();
+	const { urlImage, isLoading } = useGetCatImage({ fact });
 
-	useEffect(() => {
-		fetch(API_GET_WORD)
-			.then((res) => {
-				if (!res.ok) throw new Error('Error in API_GET_WORD');
-
-				return res.json();
-			})
-			.then((data) => {
-				const { fact } = data;
-				setFirstWord(fact);
-			})
-			.catch((error) => console.log('error->', error));
-	}, []);
-
-	useEffect(() => {
-		if (!firstWord) return;
-
-		const threeFirstWord = firstWord.split(' ', 3).join(' ');
-
-		fetch(`${API_GET_IMAGE}/cat/says/${threeFirstWord}?fontSize=50&fontColor=red`)
-			.then((res) => {
-				if (!res.ok) throw new Error('Error in API_GET_IMAGE');
-				setUrlImage(res.url);
-			})
-			.catch((error) => {
-				console.log(error);
-			});
-	}, [firstWord]);
+	const handleButton = () => {
+		randomFact();
+	};
 
 	return (
 		<main
@@ -51,10 +24,21 @@ export const App = () => {
 		>
 			<h1>Prueba Tecnica</h1>
 
-			{firstWord && <p>{firstWord}</p>}
+			<button onClick={handleButton} disabled={isLoading}>
+				{isLoading ? 'Cargando imagen...' : 'Cambiar imagen'}
+			</button>
 
-			{urlImage && (
-				<img src={urlImage} alt="cat" loading="lazy" style={{ width: '100%' }} />
+			{fact && <p>{fact}</p>}
+
+			{isLoading ? (
+				<span>Cargando...</span>
+			) : (
+				<img
+					src={urlImage}
+					alt="cat"
+					loading="lazy"
+					style={{ width: '100%', maxWidth: '300px' }}
+				/>
 			)}
 		</main>
 	);
